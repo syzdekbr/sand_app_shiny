@@ -61,7 +61,7 @@ jscode <-
 ## Get googlesheets customer data
 {
   ####**** Hide following sources of database information for example app
-  googlesheet_url <- "https://docs.google.com/spreadsheets/d/1pokQEdlQ3kUyeQkRCvR0EaTyZgTGkCV_BjQ1tFuLVuE/edit?usp=sharing"
+  googlesheet_url <- ### Googlesheet url ####
   drive_auth(path = "./keys/shiny-2-service_account.json") # go to this sheet and authorize for use
   gs4_auth(token = drive_token())
   # Stop hide
