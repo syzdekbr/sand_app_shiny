@@ -1,0 +1,36 @@
+h4 {
+  font-family: 'Lobster', cursive;
+  font-weight: 500;
+  line-height: 1.1;
+  color: #ad1d28;  
+	font-style: italic;
+}
+
+body{
+  background-color: #CED2CC;
+}
+
+#title{
+	background-color: #6AB187;
+	margin-top: -20px;
+	margin-left: -15px;
+	margin-right: -15px;
+	height: 70px;
+	line-height: 30px;
+	text-align: center;
+	padding: 20px 0;
+	font-size: 50px;
+	text-align: center;
+	font-weight: bold;
+	border-radius: 50px 20px;
+	color: #23282D; /* #EAA4A4; */
+}
+
+													  
+/*h1{
+ color: #7c795d; font-family: 'Trocchi', serif; font-size: 45px; font-weight: normal; line-height: 48px; margin: 0; 
+}*/
+
+#sidebar{
+	margin-right: -30px;
+}

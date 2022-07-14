@@ -1,0 +1,263 @@
+---
+title: "SAND Output Report"
+date: "`r paste('Report Date: ', toOrdinal::toOrdinalDate(Sys.Date()))`"
+author: "`r paste('Licensed to:', params$licensed_user)`"
+always_allow_html: true
+output: 
+    pdf_document:
+      df_print: default
+      toc: yes
+    word_document:
+      df_print: default
+      toc: yes
+      toc_depth: '4'
+    html_document:
+      toc: true
+      toc_depth: 3
+      toc_float: true
+      self_contained: yes
+      mode: selfcontained
+      theme: journal
+header-includes:
+  - \usepackage{fancyhdr}
+  - \pagestyle{fancy}
+  - \fancyhead[C]{SAND Report}
+  - \fancyfoot[C]{CONFIDENTIAL REPORT}
+  - \fancyfoot[L]{\thepage}
+  - \usepackage{comment}
+  - \usepackage{float}
+  - \usepackage{booktabs}
+  - \usepackage{makecell}
+params:
+  report_format: NA
+  plots: NA
+  tables: NA
+  text_interpretation: NA
+  introductory_text: NA
+  sand_inputs: NA
+  validity_text: NA
+  output_name: NA
+  dates: NA
+  demographics_inputs: NA
+  licensed_user: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE, echo = F)
+library(knitr)
+library(kableExtra)
+library(tinytex)
+library(flextable)
+# Global options
+knitr::opts_chunk$set(echo = FALSE, ft.tabcolsep=0, ft.latex.float = "none")
+flextable::set_flextable_defaults(fonts_ignore=TRUE) # or get warnings
+
+# Printing options depending on report format
+if(params$report_format == 'html'){
+  options(knitr.table.format = 'html')
+  } else if (params$report_format == 'pdf') {
+    options(knitr.table.format = 'latex')
+  } else {
+    options(knitr.table.format = 'markdown')
+  }
+```
+
+`r if(params$report_format != "docx") {"\\begin{comment}"}`
+
+# SAND Scoring Report
+
+`r if(params$report_format != "docx") {"\\end{comment}"}`
+
+`r colorize("PAPER RECORD FORM REQUIRED WITH EACH ADMINISTRATION TO ACCOMPANY THIS REPORT", "red")`
+
+## Background Information
+
+```{r background_table, results='asis'}
+## Splits data by defined number of columns
+  split_df_into_columns <- function(df, column_number){
+    df %>% 
+      split.default(., ceiling(seq_along(df)/column_number))
+  }
+
+# Add age, split into four column rows, print each row as separate table
+  params$demographics_inputs %>%
+    mutate(age = params$dates$age, .before = 5) %>% 
+    split_df_into_columns(., column_number = 4) %>%
+    purrr::set_names(c("Examinee", "Testing", "Background", "Additional Information")) %>%
+    imap(., ~{
+        table_print(.x, caption = .y, output_format = params$report_format, size = 10)
+     }) -> out 
+          if(params$report_format == 'html'){
+            map(out, ~cat(knitr::knit_print(.x), "\n"))
+            # invisible(cat(knitr::knit_print(table_print(out, output_format = params$report_format, size = 6))))
+          }-> suppress_print_msg else{
+                 map(out, ~cat(knitr::knit_print(.x %>% 
+                                                align(., i = 1, j = NULL, align = "left", part = "header")), "\n"))
+            } -> suppress_print_msg
+```
+
+## Introduction
+
+`r if(params$report_format == "pdf") {"\\begin{comment}"}`
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = 'blue'>
+
+`r params$introductory_text`
+
+</div>
+`r if(params$report_format == "pdf") {"\\end{comment}"}`
+
+`r if(params$report_format != "pdf") {"\\begin{comment}"}`
+
+`r params$introductory_text`
+
+`r if(params$report_format != "pdf") {"\\end{comment}"}`
+
+## Validity
+
+```{r individual_print, results='asis'}
+
+# Subchunkify will add a separate chunk within a chunk. Useful if need to change options, like height, width
+subchunkify <- function(g, fig_height=7, fig_width=5) {
+  g_deparsed <- paste0(deparse(
+    function() {g}
+  ), collapse = '')
+
+  sub_chunk <- paste0("
+  `","``{r sub_chunk_", floor(runif(1) * 10000), ", fig.height=",
+   fig_height, ", fig.width=", fig_width, ", echo=FALSE}",
+  "\n(", 
+    g_deparsed
+    , ")()",
+  "\n`","``
+  ")
+
+  cat(knitr::knit(text = knitr::knit_expand(text = sub_chunk), quiet = TRUE))
+}
+
+## HTML output
+  if(params$report_format == "html"){
+  ## Validity plot, table, text output
+    subchunkify(params$plots[[1]], fig_height = 5, fig_width = 6)
+    invisible(cat(knitr::knit_print(table_print(params$tables[[1]], output_format = params$report_format, size = 10))))
+    invisible(cat(params$validity_text, '\n'))
+
+## Scales plot, table, text output
+    cat('\n\n', "## Scales", '\n\n')
+  lapply(1:4, function(i) {
+    cat(paste("<h4>", params$output_name[-1][i], "</h4></hr>"))
+    cat("<div class = 'row h-100'>")
+      subchunkify(params$plots[-1][[i]], fig_height = 3, fig_width = 10)
+    cat("</div>")
+    cat("<div class = 'row h-100'>")
+      cat("<div class = 'col-md-6'>")
+        invisible(cat(knitr::knit_print(table_print(params$tables[-1][[i]], output_format = params$report_format, size = 10))))
+      cat("</div>")
+      cat("<div class = 'col-md-6'>")
+        invisible(cat(params$text_interpretation[[i]]))
+      cat("</div>")
+    cat("</div>")
+  }) -> suppress_print_msg
+
+###*** Code if pdf or word
+  } else {
+  ## Validity plot, table, text output
+    subchunkify(params$plots[[1]], fig_height = 3, fig_width = 6)
+    invisible(cat(knitr::knit_print(table_print(params$tables[[1]], output_format = params$report_format, size = 10))))
+    invisible(cat(params$validity_text))
+    cat("\n")
+    pander::pandoc.header("Scales", level = 2)
+    cat('\n')
+  ## Scales plot, table, text output
+  lapply(1:4, function(i) {
+  ###*** THis will print section headers. Reuse and replace level and title. Will not abstract to function
+    cat("  \n###", params$output_name[-1][[i]], "  \n")
+    subchunkify(params$plots[-1][[i]], fig_height = 5, fig_width = 10)
+    cat("\n")
+    invisible(cat(knitr::knit_print(table_print(params$tables[-1][[i]], output_format = params$report_format, size = 6))))
+    invisible(cat(params$text_interpretation[[i]]))
+    cat("\n")
+  })-> suppress_print_msg
+  }
+
+```
+
+## Endorsed Items
+
+```{r endorsed_items_table,results = 'asis'}
+# Endorsed df, grouped by form, scale, give first result as header section for those
+tags$style('#myid * { word-wrap: break-word; color: blue }') 
+  params$sand_inputs %>%
+          group_by(questionnaire) %>% 
+          mutate(
+            questionnaire = case_when(
+              questionnaire== "observation" ~ "Observation",
+              TRUE ~ "Interview"
+            ),
+            Source = ifelse(duplicated(questionnaire), "", questionnaire),
+            Modality = ifelse(duplicated(Modality), "", Modality),
+            Subscale =ifelse(duplicated(Subscale), "", Subscale)
+          ) %>% 
+          ungroup() %>% 
+          dplyr::select(Source, Modality, "  Subscale" = Subscale, Item = item, Response = input_value) -> out 
+          if(params$report_format == 'html'){
+            invisible(cat(knitr::knit_print(table_print(out, output_format = params$report_format, size = 6))))
+          } else{
+                 invisible(cat(knitr::knit_print(table_print(out, 
+                                                             output_format = params$report_format, 
+                                                             size = 4) %>%
+                                                  fontsize(., size = 6, part = "body") %>% 
+                                                  fontsize(., size = 4, j = 1)
+                               )))
+          }
+```
+
+
+<!-- insert logo -->
+```{r, echo=FALSE, message=F, warning=F, fig.align="center", out.width= '50%', out.height= '50%'}
+# Add logo to output
+library(jpeg)
+library(grid)
+library(gridExtra)
+url <- "https://stoeltingco.com/Psychological/media/stoelting_logo.jpg"
+z <- tempfile()
+download.file(url,z,mode="wb")
+img <- readJPEG(z)
+rimg <- rasterGrob(as.raster(img)) # raster multilayer object
+tg <- textGrob("Stoelting Psychology", gp=gpar(fontfamily = "serif", fontsize = 20))
+sg1 <- textGrob("www.stoeltingco.com", gp=gpar(fontfamily = "sans", fontsize = 10))
+sg2 <- textGrob("620 Wheat Lane", gp=gpar(fontfamily = "sans", fontsize = 10))
+sg3 <- textGrob("Wood Dale, IL, USA 60191", gp=gpar(fontfamily = "sans", fontsize = 10))
+sg4 <- textGrob("psychtests@stoeltingco.com", gp=gpar(fontfamily = "sans", fontsize = 10))
+sg5 <- textGrob("630-860-9700", gp=gpar(fontfamily = "sans", fontsize = 10))
+lay <- rbind(c(1,NA),
+             c(1,NA),
+             c(1,NA),
+             c(1,NA),
+             c(1,2),
+             c(1,3),
+             c(1,4),
+             c(1,5),
+             c(1,6),
+             c(1,7),
+             c(1,NA),
+             c(1,NA),
+             c(1,NA),
+             c(1,NA))
+grid.arrange(rimg, tg, sg1, sg2, sg3, sg4, sg5, layout_matrix = lay)
+grid.rect(width = 1.5, height = .5, gp = gpar(lwd = 2, col = "blue", fill = NA))
+```
+&nbsp;
+
+<!-- html contact links footer -->
+```{r contact_info, echo=FALSE, results= 'asis'}
+  cat("<p style=\"text-align: 
+      center;\">Copyright 2022:<a href=\"https://www.stoeltingco.com\" target = \"_blank\">Stoelting</a></p>")
+if (params$report_format == "html"){
+  cat("<p style=\"text-align: center;\"><a style=\"color: #0645AD;\" href = \"mailto:psychtests@stoeltingco?subject = SAND App&body = Message\"><em>Email Stoelting for support</em></a></p>")
+}
+```
+

@@ -1,0 +1,12 @@
+name: SAND_application
+title: SAND_application
+username:
+account: stoeltingco
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2100768
+bundleId: 3503160
+url: https://stoeltingco.shinyapps.io/SAND_application/
+when: 1597175594.71623
+asMultiple: FALSE
+asStatic: FALSE
