@@ -1,11 +1,6 @@
 # Shiny server info -------------------------------------------------------
 
 # Application is at: http://ec2-18-225-7-170.us-east-2.compute.amazonaws.com:3838/sample-apps/SAND_app/
-# Commands to save to rstudio server
-# cd Downloads
-# chmod 400 rstudio-server-shiny.pem
-# ssh -i "rstudio-server-shiny.pem" ubuntu@ec2-18-225-7-170.us-east-2.compute.amazonaws.com
-# sudo cp -r /home/rstudio/ShinyApps/sample-apps/SAND_app/SAND_app/ /srv/shiny-server/sample-apps/
 
 ## To do and/or consider-
   # * Abstract the gather inputs process to handle if there are multiple tabs
@@ -61,7 +56,7 @@ jscode <-
 ## Get googlesheets customer data
 {
   ####**** Hide following sources of database information for example app
-  googlesheet_url <- ### Googlesheet url ####
+  googlesheet_url <- #<googlesheet_url>
   drive_auth(path = "./keys/shiny-2-service_account.json") # go to this sheet and authorize for use
   gs4_auth(token = drive_token())
   # Stop hide
